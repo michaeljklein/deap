@@ -237,7 +237,7 @@ def median(seq, key=identity):
         return (key(sseq[(length - 1) // 2]) + key(sseq[length // 2])) / 2.0
 
 
-def sortLogNondominated(individuals, k, first_front_only=False):
+def sortLogNondominated_no_fallback(individuals, k, first_front_only=False):
     """Sort *individuals* in pareto non-dominated fronts using the Generalized
     Reduced Run-Time Complexity Non-Dominated Sorting Algorithm presented by
     Fortin et al. (2013).
@@ -451,6 +451,26 @@ def sweepB(best, worst, front):
         if 0 < idx <= len(stairs):
             fstair = max(fstairs[:idx], key=front.__getitem__)
             front[h] = max(front[h], front[fstair]+1)
+
+
+def sortLogNondominated(individuals, k, first_front_only=False):
+    try:
+        return sortLogNondominated_no_fallback(individuals, k, first_front_only)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except Exception as e:
+        print(f"sortLogNondominated_no_fallback failed with {e}")
+        print(f"k: {k}")
+        for individual in individuals:
+            print('individual')
+            print(individual)
+            print('ind.fitness.wvalues')
+            print(ind.fitness.wvalues)
+            print()
+
+        print(f"falling back to sortNondominated..")
+        return sortNondominated(individuals, k, first_front_only)
+
 
 ######################################
 # Non-Dominated Sorting  (NSGA-III)  #
